@@ -8,24 +8,35 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = ["snekmate"]
+default_network_name = "mainnet-fork"
 
-[networks.pyevm]
-is_zksync = false
 
-[networks.anvil]
-url = "http://127.0.0.1:8545"
-prompt_live = false
-save_to_db = false
-chain_id = 31337
+[networks.mainnet-fork]
+url = "${MAINNET_RPC_URL}"
+explorer_uri = "https://api.etherscan.com/api/"
+explorer_type = "etherscan"
+explorer_api_key="${ETHERSCAN_TOKEN}"
+chain_id = 1
+fork = true
 
-[networks.sepolia]
-url = "https://ethereum-sepolia-rpc.publicnode.com"
-chain_id = 11155111
 
-[networks.zksync-sepolia]
-url = "https://sepolia.era.zksync.dev"
-chain_id = 300
-is_zksync = true
-prompt_live = true
+[networks.mainnet]
+url = "${MAINNET_RPC_URL}"
+explorer_uri = "https://api.etherscan.com/api/"
+explorer_type = "etherscan"
+explorer_api_key="${ETHERSCAN_TOKEN}"
+chain_id = 1
+fork = false
 
-# You can view all configuration options at https://cyfrin.github.io/moccasin/all_moccasin_toml_parameters.html
+
+[networks.mainnet-fork.contracts.fee_collector]
+address = "0xa2Bcd1a4Efbd04B63cd03f5aFf2561106ebCCE00"
+abi_from_explorer = true
+
+[networks.mainnet-fork.contracts.hooker]
+address = "0x9A9DF35cd8E88565694CA6AD5093c236C7f6f69D"
+abi_from_explorer = true
+
+[networks.mainnet-fork.contracts.fee_distributor]
+address = "0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914"
+abi_from_explorer = true

@@ -1,4 +1,4 @@
-# pragma version 0.4.0
+# pragma version 0.4.1
 # @license MIT
 
 from ethereum.ercs import IERC20
@@ -12,31 +12,48 @@ exports: (
     ownable.owner
 )
 
+interface FeeDistributor:
+    def burn(_coin: address) -> bool: nonpayable
+
 event ReceiverSet:
     receiver: indexed(address)
     old_weight: uint256
     new_weight: uint256
+    hook_foreplay: Bytes[1024]
 
 event ReceiverRemoved:
     receiver: indexed(address)
+
+event HookExecuted:
+    receiver: indexed(address)
+    value: uint256
+
+struct HookInput:
+    receiver_index: uint8
+    value: uint256
+    data: Bytes[8192]
+
+struct ReceiverData:
+    weight: uint256
+    hook_foreplay: Bytes[1024]
 
 MAX_RECEIVERS: constant(uint256) = 10
 MAX_BPS: constant(uint256) = 10_000
 MAX_TOTAL_WEIGHT: constant(uint256) = 5_000
 
 crvusd: immutable(IERC20)
-fee_distributor: public(immutable(address))
+fee_distributor: public(immutable(FeeDistributor))
 
-receiver_weights: public(HashMap[address, uint256])
+receiver_data: public(HashMap[address, ReceiverData])
 receivers: public(DynArray[address, MAX_RECEIVERS])
 receiver_indices: HashMap[address, uint256]
 
 version: public(constant(String[8])) = "0.1.0"
 
-@external
+@deploy
 def __init__(
     _crvusd: IERC20,
-    _fee_distributor: address,
+    _fee_distributor: FeeDistributor,
     owner: address,):
     """
     @notice Initialize the contract with the fee distributor address
@@ -58,27 +75,29 @@ def __init__(
 @view
 def _calculate_total_weight() -> uint256:
     """
-    @dev Calculate the total weight of all receivers
+    @dev Calculate the total weight of all receivers except the fee distributor
     @return The total weight
     """
     total: uint256 = 0
-    for receiver in self.receivers:
-        total += self.receiver_weights[receiver]
+    for receiver: address in self.receivers:
+        total += self.receiver_data[receiver].weight
     return total
 
 
 @external
-def set_receiver(receiver: address, weight: uint256):
+def set_receiver(receiver: address, weight: uint256, hook_foreplay: Bytes[1024]):
     """
-    @notice Add or update a receiver with a specified weight
+    @notice Add or update a receiver with a specified weight and optional hook foreplay
     @param receiver The address of the receiver
     @param weight The weight assigned to the receiver
+    @param hook_foreplay The hook foreplay data (method_id + fixed params)
     """
     ownable._check_owner()
     assert receiver != empty(address), "zeroaddr: receiver"
     assert weight > 0, "receivers: invalid weight"
 
-    old_weight: uint256 = self.receiver_weights[receiver]
+    old_data: ReceiverData = self.receiver_data[receiver]
+    old_weight: uint256 = old_data.weight
     total_weight: uint256 = self._calculate_total_weight()
 
     if old_weight > 0:
@@ -93,9 +112,12 @@ def set_receiver(receiver: address, weight: uint256):
         self.receiver_indices[receiver] = len(self.receivers)
         self.receivers.append(receiver)
 
-    self.receiver_weights[receiver] = weight
+    self.receiver_data[receiver] = ReceiverData(
+        weight=weight,
+        hook_foreplay=hook_foreplay
+    )
 
-    log ReceiverSet(receiver, old_weight, weight)
+    log ReceiverSet(receiver=receiver, old_weight=old_weight, new_weight=weight, hook_foreplay=hook_foreplay)
 
 
 @external
@@ -105,7 +127,7 @@ def remove_receiver(receiver: address):
     @param receiver The address of the receiver to remove
     """
     ownable._check_owner()
-    assert self.receiver_weights[receiver] > 0, "receivers: does not exist"
+    assert self.receiver_data[receiver].weight > 0, "receivers: does not exist"
 
     index_to_remove: uint256 = self.receiver_indices[receiver]
     last_index: uint256 = len(self.receivers) - 1
@@ -117,10 +139,50 @@ def remove_receiver(receiver: address):
 
     self.receivers.pop()
 
-    self.receiver_weights[receiver] = 0
+    self.receiver_data[receiver] = empty(ReceiverData)
     self.receiver_indices[receiver] = 0
 
-    log ReceiverRemoved(receiver)
+    log ReceiverRemoved(receiver=receiver)
+
+
+@external
+def distribute_fees(hook_inputs: DynArray[HookInput, MAX_RECEIVERS]):
+    """
+    @notice Distribute accumulated crvUSD fees to receivers based on their weights
+    @param hook_inputs Array of hook inputs for each receiver to execute
+    """
+    ownable._check_owner()
+    assert len(hook_inputs) == len(self.receivers), "receivers: missing hook input data"
+
+    amount_receivable: uint256 = staticcall crvusd.balanceOf(msg.sender)
+    extcall crvusd.transferFrom(msg.sender, self, amount_receivable)
+    balance: uint256 = staticcall crvusd.balanceOf(self)
+    assert balance > 0, "receivers: no fees to distribute"
+
+    total_weight: uint256 = self._calculate_total_weight()
+    distributor_weight: uint256 = MAX_BPS - total_weight
+
+    i: uint256 = 0
+    for receiver: address in self.receivers:
+        weight: uint256 = self.receiver_data[receiver].weight
+        amount: uint256 = balance * weight // MAX_BPS
+        hook_foreplay: Bytes[1024] = self.receiver_data[receiver].hook_foreplay
+        input: HookInput = hook_inputs[i]
+        i+=1
+
+        if len(hook_foreplay) == 0:
+            extcall crvusd.transfer(receiver, amount)
+        else:
+            raw_call(
+                receiver,
+                concat(hook_foreplay, input.data),
+                value=input.value,
+                revert_on_failure=True
+            )
+
+            log HookExecuted(receiver=receiver, value=input.value)
+
+    extcall fee_distributor.burn(crvusd.address)
 
 
 @view
@@ -145,14 +207,12 @@ def distributor_weight() -> uint256:
 
 @view
 @external
-def get_all_receivers_with_weights() -> (DynArray[address, MAX_RECEIVERS], DynArray[uint256, MAX_RECEIVERS]):
+def get_receiver_info(receiver: address) -> (uint256, Bytes[1024], bool):
     """
-    @notice Get all receivers with their weights
-    @return Tuple of (addresses array, weights array)
+    @notice Get all information for a specific receiver
+    @param receiver The address of the receiver
+    @return A tuple containing (weight, hook_foreplay, exists)
     """
-    weights: DynArray[uint256, MAX_RECEIVERS] = []
-
-    for receiver in self.receivers:
-        weights.append(self.receiver_weights[receiver])
-
-    return (self.receivers, weights)
+    data: ReceiverData = self.receiver_data[receiver]
+    exists: bool = data.weight > 0
+    return (data.weight, data.hook_foreplay, exists)
