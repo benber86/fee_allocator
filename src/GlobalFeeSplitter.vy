@@ -23,6 +23,10 @@ event ReceiverSet:
 event ReceiverRemoved:
     receiver: indexed(address)
 
+event FeesDistributed:
+    total_amount: uint256
+    distributor_share: uint256
+
 struct ReceiverConfig:
     receiver: address
     weight: uint256
@@ -176,6 +180,7 @@ def distribute_fees():
     extcall crvusd.approve(fee_distributor.address, 0)
     extcall crvusd.approve(fee_distributor.address, remaining_balance)
     extcall fee_distributor.burn(crvusd.address)
+    log FeesDistributed(total_amount=balance, distributor_share=remaining_balance)
 
 
 @view
