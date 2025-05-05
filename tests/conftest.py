@@ -37,7 +37,7 @@ def actual_fee_distributor() -> VyperContract:
 
 
 @pytest.fixture(scope="session")
-def default_account() -> MoccasinAccount:
+def admin() -> MoccasinAccount:
     return moccasin.config.get_active_network().get_default_account()
 
 
@@ -64,9 +64,9 @@ def mint_to_receiver(actual_crvusd, crvusd_minter) -> Callable[[str, int], None]
     return inner
 
 @pytest.fixture(scope="session")
-def global_fee_splitter(actual_fee_distributor, actual_hooker) -> VyperContract:
+def global_fee_splitter(actual_fee_distributor, actual_fee_collector, admin) -> VyperContract:
     return GlobalFeeSplitter.deploy(
-        actual_fee_distributor, actual_hooker
+        actual_fee_distributor, actual_fee_collector, admin
     )
 
 
