@@ -1,3 +1,5 @@
+from typing import Callable
+
 import boa
 import pytest
 from moccasin.boa_tools import VyperContract
@@ -43,6 +45,23 @@ def default_account() -> MoccasinAccount:
 def fee_receiver():
     return boa.env.generate_address()
 
+
+@pytest.fixture(scope="session")
+def multiple_fee_receivers():
+    return [boa.env.generate_address() for _ in range(10)]
+
+
+@pytest.fixture(scope="session")
+def crvusd_minter(actual_crvusd):
+    return actual_crvusd.minter()
+
+
+@pytest.fixture(scope="session")
+def mint_to_receiver(actual_crvusd, crvusd_minter) -> Callable[[str, int], None]:
+    def inner(receiver: str, amount: int):
+        with boa.env.prank(crvusd_minter):
+            actual_crvusd.mint(receiver, amount)
+    return inner
 
 @pytest.fixture(scope="session")
 def global_fee_splitter(actual_fee_distributor, actual_hooker) -> VyperContract:
