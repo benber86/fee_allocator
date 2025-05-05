@@ -35,7 +35,6 @@ MAX_RECEIVERS: constant(uint256) = 10
 MAX_BPS: constant(uint256) = 10_000
 MAX_TOTAL_WEIGHT: constant(uint256) = 5_000 # in bps
 
-crvusd: immutable(IERC20)
 fee_distributor: public(immutable(FeeDistributor))
 
 receiver_weights: public(HashMap[address, uint256])
@@ -47,23 +46,19 @@ version: public(constant(String[8])) = "0.1.0"
 
 @deploy
 def __init__(
-    _crvusd: IERC20,
     _fee_distributor: FeeDistributor,
     owner: address,):
     """
     @notice Initialize the contract with the fee distributor address
     @notice The fee distributor will receive whatever is not distributed to other receivers
     @param _fee_distributor The address of the fee distributor contract
-    @param _crvusd The address of the crvUSD token contract
     """
-    assert _crvusd.address != empty(address), "zeroaddr: crvusd"
     assert owner != empty(address), "zeroaddr: owner"
 
     ownable.__init__()
     ownable._transfer_ownership(owner)
 
     fee_distributor = _fee_distributor
-    crvusd = _crvusd
     self.total_weight = 0
 
 
@@ -157,15 +152,16 @@ def remove_receiver(receiver: address):
 
 @nonreentrant
 @external
-def distribute_fees():
+def distribute_fees(_fee_token: address):
     """
     @notice Distribute accumulated crvUSD fees to receivers based on their weights
+    @param _fee_token The address of the reward token contract (crvUSD)
     """
     ownable._check_owner()
-
-    amount_receivable: uint256 = staticcall crvusd.balanceOf(msg.sender)
-    extcall crvusd.transferFrom(msg.sender, self, amount_receivable)
-    balance: uint256 = staticcall crvusd.balanceOf(self)
+    fee_token: IERC20 = IERC20(_fee_token)
+    amount_receivable: uint256 = staticcall fee_token.balanceOf(msg.sender)
+    extcall fee_token.transferFrom(msg.sender, self, amount_receivable)
+    balance: uint256 = staticcall fee_token.balanceOf(self)
     assert balance > 0, "receivers: no fees to distribute"
 
     remaining_balance: uint256 = balance
@@ -174,12 +170,12 @@ def distribute_fees():
         weight: uint256 = self.receiver_weights[receiver]
         amount: uint256 = balance * weight // MAX_BPS
         if amount > 0:
-            extcall crvusd.transfer(receiver, amount)
+            extcall fee_token.transfer(receiver, amount)
             remaining_balance -= amount
 
-    extcall crvusd.approve(fee_distributor.address, 0)
-    extcall crvusd.approve(fee_distributor.address, remaining_balance)
-    extcall fee_distributor.burn(crvusd.address)
+    extcall fee_token.approve(fee_distributor.address, 0)
+    extcall fee_token.approve(fee_distributor.address, remaining_balance)
+    extcall fee_distributor.burn(fee_token.address)
     log FeesDistributed(total_amount=balance, distributor_share=remaining_balance)
 
 

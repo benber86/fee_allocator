@@ -40,3 +40,7 @@ abi_from_explorer = true
 [networks.mainnet-fork.contracts.fee_distributor]
 address = "0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914"
 abi_from_explorer = true
+
+[networks.mainnet-fork.contracts.crvusd]
+address = "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E"
+abi_from_explorer = true
