@@ -131,3 +131,9 @@ def test_distribute_multiple_receivers(actual_fee_collector,
     assert post_distribution_collector_balance == 0
     assert post_distribution_distributor_balance == pytest.approx(
         pre_distribution_distributor_balance + distributor_amount)
+
+
+def test_distribute_fees_no_balance(global_fee_splitter, actual_hooker, actual_crvusd):
+    with boa.env.prank(actual_hooker.address):
+        with pytest.raises(Exception):
+            global_fee_splitter.distribute_fees(actual_crvusd.address)

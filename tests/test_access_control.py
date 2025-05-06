@@ -52,3 +52,11 @@ def test_access_control_transfer_ownership(global_fee_splitter, admin):
     with boa.env.prank(admin.address):
         global_fee_splitter.transfer_ownership(new_owner)
         assert global_fee_splitter.owner() == new_owner
+
+
+def test_access_control_distribute_fees(global_fee_splitter, actual_crvusd, admin):
+    random_address = boa.env.generate_address()
+
+    with boa.env.prank(random_address):
+        with pytest.raises(Exception):
+            global_fee_splitter.distribute_fees(actual_crvusd.address)

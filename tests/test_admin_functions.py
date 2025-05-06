@@ -159,3 +159,11 @@ def test_distributor_weight_after_remove(global_fee_splitter, admin, fee_receive
         global_fee_splitter.set_receiver(fee_receiver, 2000)
         global_fee_splitter.remove_receiver(fee_receiver)
         assert global_fee_splitter.distributor_weight() == 10000
+
+
+
+def test_edge_case_max_weight(global_fee_splitter, admin, fee_receiver):
+    with boa.env.prank(admin.address):
+        global_fee_splitter.set_receiver(fee_receiver, 5000)
+        assert global_fee_splitter.total_weight() == 5000
+        assert global_fee_splitter.distributor_weight() == 5000
