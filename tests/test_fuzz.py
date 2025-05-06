@@ -1,4 +1,9 @@
-from hypothesis.stateful import RuleBasedStateMachine, rule, invariant, run_state_machine_as_test
+from hypothesis.stateful import (
+    RuleBasedStateMachine,
+    rule,
+    invariant,
+    run_state_machine_as_test,
+)
 from hypothesis import settings
 from boa.test.strategies import strategy
 import boa
@@ -9,8 +14,15 @@ from tests.conftest import ZERO_ADDRESS
 
 @pytest.mark.fuzz
 class GlobalFeeSplitterStateMachine(RuleBasedStateMachine):
-    def __init__(self, global_fee_splitter, admin, actual_crvusd, actual_hooker, actual_fee_distributor,
-                 mint_to_receiver):
+    def __init__(
+        self,
+        global_fee_splitter,
+        admin,
+        actual_crvusd,
+        actual_hooker,
+        actual_fee_distributor,
+        mint_to_receiver,
+    ):
         super().__init__()
         self.global_fee_splitter = global_fee_splitter
         self.admin = admin
@@ -22,7 +34,10 @@ class GlobalFeeSplitterStateMachine(RuleBasedStateMachine):
         self.receiver_weights = {}
         self.total_weight = 0
 
-    @rule(receiver=strategy("address"), weight=strategy("uint256", min_value=1, max_value=5000))
+    @rule(
+        receiver=strategy("address"),
+        weight=strategy("uint256", min_value=1, max_value=5000),
+    )
     def set_receiver(self, receiver, weight):
         if receiver == ZERO_ADDRESS:
             return
@@ -66,7 +81,7 @@ class GlobalFeeSplitterStateMachine(RuleBasedStateMachine):
                 print("Unexpected exception in remove_receiver")
                 raise e
 
-    @rule(amount=strategy("uint256", min_value=1000, max_value=1000000 * 10 ** 18))
+    @rule(amount=strategy("uint256", min_value=1000, max_value=1000000 * 10**18))
     def distribute_fees(self, amount):
         if amount == 0:
             return
@@ -75,13 +90,23 @@ class GlobalFeeSplitterStateMachine(RuleBasedStateMachine):
             try:
                 self.mint_to_receiver(self.actual_hooker.address, amount)
 
-                pre_balances = {receiver: self.actual_crvusd.balanceOf(receiver) for receiver in self.active_receivers}
-                pre_distributor_balance = self.actual_crvusd.balanceOf(self.actual_fee_distributor.address)
+                pre_balances = {
+                    receiver: self.actual_crvusd.balanceOf(receiver)
+                    for receiver in self.active_receivers
+                }
+                pre_distributor_balance = self.actual_crvusd.balanceOf(
+                    self.actual_fee_distributor.address
+                )
 
                 self.global_fee_splitter.distribute_fees(self.actual_crvusd.address)
 
-                post_balances = {receiver: self.actual_crvusd.balanceOf(receiver) for receiver in self.active_receivers}
-                post_distributor_balance = self.actual_crvusd.balanceOf(self.actual_fee_distributor.address)
+                post_balances = {
+                    receiver: self.actual_crvusd.balanceOf(receiver)
+                    for receiver in self.active_receivers
+                }
+                post_distributor_balance = self.actual_crvusd.balanceOf(
+                    self.actual_fee_distributor.address
+                )
 
                 total_distributed = 0
                 for receiver in self.active_receivers:
@@ -90,8 +115,13 @@ class GlobalFeeSplitterStateMachine(RuleBasedStateMachine):
                     assert abs(received - expected) <= len(self.active_receivers)
                     total_distributed += received
 
-                distributor_received = post_distributor_balance - pre_distributor_balance
-                assert abs(total_distributed + distributor_received - amount) <= len(self.active_receivers) + 1
+                distributor_received = (
+                    post_distributor_balance - pre_distributor_balance
+                )
+                assert (
+                    abs(total_distributed + distributor_received - amount)
+                    <= len(self.active_receivers) + 1
+                )
 
             except Exception as e:
                 print("Unexpected exception in distribute_fees")
@@ -109,15 +139,28 @@ class GlobalFeeSplitterStateMachine(RuleBasedStateMachine):
 
     @invariant()
     def distributor_weight_invariant(self):
-        assert self.global_fee_splitter.distributor_weight() == 10000 - self.total_weight
-
+        assert (
+            self.global_fee_splitter.distributor_weight() == 10000 - self.total_weight
+        )
 
 
 @pytest.mark.fuzz
-def test_global_fee_splitter(global_fee_splitter, admin, actual_crvusd, actual_hooker, actual_fee_distributor, mint_to_receiver):
+def test_global_fee_splitter(
+    global_fee_splitter,
+    admin,
+    actual_crvusd,
+    actual_hooker,
+    actual_fee_distributor,
+    mint_to_receiver,
+):
     run_state_machine_as_test(
         lambda: GlobalFeeSplitterStateMachine(
-            global_fee_splitter, admin, actual_crvusd, actual_hooker, actual_fee_distributor, mint_to_receiver
+            global_fee_splitter,
+            admin,
+            actual_crvusd,
+            actual_hooker,
+            actual_fee_distributor,
+            mint_to_receiver,
         ),
-        settings=settings(max_examples=100, stateful_step_count=20)
+        settings=settings(max_examples=100, stateful_step_count=20),
     )

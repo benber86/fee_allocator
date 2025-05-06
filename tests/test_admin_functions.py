@@ -43,7 +43,9 @@ def test_set_multiple_receivers_empty_array(global_fee_splitter, admin):
             global_fee_splitter.set_multiple_receivers([])
 
 
-def test_set_multiple_receivers_valid(global_fee_splitter, admin, multiple_fee_receivers):
+def test_set_multiple_receivers_valid(
+    global_fee_splitter, admin, multiple_fee_receivers
+):
     with boa.env.prank(admin.address):
         receivers = multiple_fee_receivers[:3]
         weights = [1000, 1500, 2000]
@@ -61,7 +63,9 @@ def test_set_multiple_receivers_valid(global_fee_splitter, admin, multiple_fee_r
 def test_set_multiple_receivers_exceeding_max_weight(global_fee_splitter, admin):
     with boa.env.prank(admin.address):
         with pytest.raises(Exception):
-            global_fee_splitter.set_multiple_receivers([(boa.env.generate_address(), 5001)])
+            global_fee_splitter.set_multiple_receivers(
+                [(boa.env.generate_address(), 5001)]
+            )
 
 
 def test_remove_nonexistent_receiver(global_fee_splitter, admin):
@@ -159,7 +163,6 @@ def test_distributor_weight_after_remove(global_fee_splitter, admin, fee_receive
         global_fee_splitter.set_receiver(fee_receiver, 2000)
         global_fee_splitter.remove_receiver(fee_receiver)
         assert global_fee_splitter.distributor_weight() == 10000
-
 
 
 def test_edge_case_max_weight(global_fee_splitter, admin, fee_receiver):
