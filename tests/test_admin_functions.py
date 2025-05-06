@@ -120,6 +120,39 @@ def test_remove_first_receiver(global_fee_splitter, admin, multiple_fee_receiver
         assert global_fee_splitter.receivers(1) == receivers[1]
 
 
+def test_add_remove_all_then_add_new(global_fee_splitter, admin, multiple_fee_receivers):
+    receivers = multiple_fee_receivers[:5]
+    weights = [1000, 1200, 800, 500, 1500]
+
+    with boa.env.prank(admin.address):
+        for i in range(5):
+            global_fee_splitter.set_receiver(receivers[i], weights[i])
+
+        assert global_fee_splitter.n_receivers() == 5
+        assert global_fee_splitter.total_weight() == sum(weights)
+
+        for _ in range(5):
+            receiver_to_remove = global_fee_splitter.receivers(0)
+            global_fee_splitter.remove_receiver(receiver_to_remove)
+
+        assert global_fee_splitter.n_receivers() == 0
+        assert global_fee_splitter.total_weight() == 0
+        assert global_fee_splitter.distributor_weight() == 10000
+
+        new_receivers = multiple_fee_receivers[5:8]
+        new_weights = [700, 900, 1100]
+
+        for i in range(3):
+            global_fee_splitter.set_receiver(new_receivers[i], new_weights[i])
+
+        assert global_fee_splitter.n_receivers() == 3
+        assert global_fee_splitter.total_weight() == sum(new_weights)
+
+        for i in range(3):
+            assert global_fee_splitter.receiver_weights(new_receivers[i]) == new_weights[i]
+            assert global_fee_splitter.receivers(i) == new_receivers[i]
+
+
 def test_max_receivers_limit_reached(global_fee_splitter, admin):
     with boa.env.prank(admin.address):
         for i in range(10):
