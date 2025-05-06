@@ -41,6 +41,8 @@ class GlobalFeeSplitterStateMachine(RuleBasedStateMachine):
     def set_receiver(self, receiver, weight):
         if receiver == ZERO_ADDRESS:
             return
+        if self.global_fee_splitter.n_receivers() >= self.global_fee_splitter.MAX_RECEIVERS():
+            return
 
         with boa.env.prank(self.admin.address):
             try:
@@ -162,5 +164,5 @@ def test_global_fee_splitter(
             actual_fee_distributor,
             mint_to_receiver,
         ),
-        settings=settings(max_examples=100, stateful_step_count=20),
+        settings=settings(max_examples=1000, stateful_step_count=50),
     )

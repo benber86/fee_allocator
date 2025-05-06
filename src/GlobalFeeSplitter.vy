@@ -38,9 +38,9 @@ struct ReceiverConfig:
     weight: uint256
 
 
-MAX_RECEIVERS: constant(uint256) = 10
+MAX_RECEIVERS: public(constant(uint256)) = 10
 MAX_BPS: constant(uint256) = 10_000
-MAX_TOTAL_WEIGHT: constant(uint256) = 5_000  # in bps
+MAX_TOTAL_WEIGHT: public(constant(uint256)) = 5_000  # in bps
 
 fee_distributor: public(immutable(FeeDistributor))
 fee_collector: public(immutable(FeeCollector))
