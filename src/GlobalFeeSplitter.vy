@@ -65,6 +65,10 @@ def __init__(
     @param _fee_distributor The address of the fee distributor contract
     """
     assert owner != empty(address), "zeroaddr: owner"
+    assert _fee_distributor.address != empty(
+        address
+    ), "zeroaddr: fee_distributor"
+    assert _fee_collector.address != empty(address), "zeroaddr: fee_collector"
 
     ownable.__init__()
     ownable._transfer_ownership(owner)
@@ -101,7 +105,9 @@ def _set_receiver(receiver: address, weight: uint256):
     ), "receivers: exceeds max total weight"
 
     if old_weight == 0:
-        self.receiver_indices[receiver] = len(self.receivers)
+        self.receiver_indices[receiver] = (
+            len(self.receivers) + 1
+        )  # offset by 1, 0 is for deleted receivers
         self.receivers.append(receiver)
 
     self.receiver_weights[receiver] = weight
@@ -148,13 +154,13 @@ def remove_receiver(receiver: address):
     weight: uint256 = self.receiver_weights[receiver]
     assert weight > 0, "receivers: does not exist"
 
-    index_to_remove: uint256 = self.receiver_indices[receiver]
+    index_to_remove: uint256 = self.receiver_indices[receiver] - 1
     last_index: uint256 = len(self.receivers) - 1
     assert self.receivers[index_to_remove] == receiver
     if index_to_remove < last_index:
         last_receiver: address = self.receivers[last_index]
         self.receivers[index_to_remove] = last_receiver
-        self.receiver_indices[last_receiver] = index_to_remove
+        self.receiver_indices[last_receiver] = index_to_remove + 1
 
     self.receivers.pop()
 
