@@ -14,8 +14,28 @@ A maximum of 10 receivers can be added.
 
 ![fee_allocation_diagram.png](fee_allocation_diagram.png)
 
-## Flow
+## Workflow
 
-Currently when calling `forward()` on the `FeeCollector` during the `FORWARD` period of the week, collected fees accumulated in the contract from the burning process are transferred to the `Hooker`. The `duty_act` function on the `Hooker` is called, executing the configured hook.
+### Current Workflow
 
-The `Hooker` on mainnet has one single hook targeting the [`FeeDistributor`](https://etherscan.io/address/0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914#code)
+Currently when calling `forward` on the `FeeCollector` during the `FORWARD` period of the week, collected fees accumulated in the contract from the burning process are transferred to the `Hooker`. The `duty_act` function on the `Hooker` is called, executing the configured hook.
+
+The `Hooker` on mainnet has one single hook targeting the [`FeeDistributor`](https://etherscan.io/address/0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914#code) calling its `burn` function for the crvUSD token. The `burn` function in turn transfers the entire crvUSD balance from the caller (=`Hooker`) to itself and makes it available to veCRV holders. 
+
+### Revised Workflow
+
+The `FeeAllocator` contract is inserted in the current workflow by replacing the mainnet `Hooker`'s hook with one that calls `distribute_fees` on the `FeeAllocator` instead.
+
+The `FeeAllocator` will transfer the `Hooker`'s crvUSD balance to itself, allocate the funds to each of the specified receivers according to their weight. Afterwards, it calls `burn` on the `FeeDistributor` which transfers the remaining balance to the `FeeDistributor` and makes it available to veCRV holders.
+
+## Specifying Receivers
+
+Receivers can be added via the `set_receiver` function by specifying the receiver's address and the percentage of the collected fees (in BPS) to direct towards it. For instance:
+
+```
+fee_allocator.set_receiver(grants_multisig, 1000)  # 10%
+fee_allocator.set_receiver(dev_fund, 500)          # 5%
+# Remaining 85% automatically goes to veCRV holders
+```
+
+Receivers can only be added, modified or removed by the DAO. 
