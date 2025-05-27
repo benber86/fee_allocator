@@ -35,7 +35,7 @@ Receivers can be added via the `set_receiver` function by specifying the receive
 ```
 fee_allocator.set_receiver(grants_multisig, 1000)  # 10%
 fee_allocator.set_receiver(dev_fund, 500)          # 5%
-# Remaining 85% automatically goes to veCRV holders
+# Remaining 85% will go to veCRV holders
 ```
 
 Receivers can only be added, modified or removed by the DAO. 
