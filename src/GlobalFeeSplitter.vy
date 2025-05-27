@@ -1,5 +1,10 @@
 # pragma version 0.4.1
-# @license MIT
+"""
+@title FeeAllocator
+@license MIT
+@author Curve Finance
+@notice Allocate protocol fees between different receivers
+"""
 
 from ethereum.ercs import IERC20
 
@@ -63,6 +68,7 @@ def __init__(
     @notice Initialize the contract with the fee distributor address
     @notice The fee distributor will receive whatever is not distributed to other receivers
     @param _fee_distributor The address of the fee distributor contract
+    @param _fee_collector The address of the fee collector contract
     """
     assert owner != empty(address), "zeroaddr: owner"
     assert _fee_distributor.address != empty(
@@ -75,7 +81,6 @@ def __init__(
 
     fee_distributor = _fee_distributor
     fee_collector = _fee_collector
-    self.total_weight = 0
 
 
 @internal
@@ -179,7 +184,9 @@ def distribute_fees(_fee_token: address):
     @notice Distribute accumulated crvUSD fees to receivers based on their weights
     @param _fee_token The address of the reward token contract (crvUSD)
     """
-    assert msg.sender == staticcall fee_collector.hooker()
+    assert (
+        msg.sender == staticcall fee_collector.hooker()
+    ), "distribute: hooker only"
     fee_token: IERC20 = IERC20(_fee_token)
     amount_receivable: uint256 = staticcall fee_token.balanceOf(msg.sender)
     extcall fee_token.transferFrom(msg.sender, self, amount_receivable)
@@ -192,10 +199,16 @@ def distribute_fees(_fee_token: address):
         weight: uint256 = self.receiver_weights[receiver]
         amount: uint256 = balance * weight // MAX_BPS
         if amount > 0:
-            extcall fee_token.transfer(receiver, amount)
+            extcall fee_token.transfer(
+                receiver, amount, default_return_value=True
+            )
             remaining_balance -= amount
-    extcall fee_token.approve(fee_distributor.address, 0)
-    extcall fee_token.approve(fee_distributor.address, remaining_balance)
+    extcall fee_token.approve(
+        fee_distributor.address, 0, default_return_value=True
+    )
+    extcall fee_token.approve(
+        fee_distributor.address, remaining_balance, default_return_value=True
+    )
     extcall fee_distributor.burn(fee_token.address)
     log FeesDistributed(
         total_amount=balance, distributor_share=remaining_balance
