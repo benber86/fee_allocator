@@ -18,9 +18,9 @@ A maximum of 10 receivers can be added.
 
 ### Current Workflow
 
-Currently when calling `forward` on the `FeeCollector` during the `FORWARD` period of the week, collected fees accumulated in the contract from the burning process are transferred to the `Hooker`. The `duty_act` function on the `Hooker` is called, executing the configured hook.
+Currently when calling `forward` on the [`FeeCollector`](https://etherscan.io/address/0xa2Bcd1a4Efbd04B63cd03f5aFf2561106ebCCE00) during the `FORWARD` period of the week, collected fees accumulated in the contract from the burning process are transferred to the `Hooker`. The `duty_act` function on the `Hooker` is called, executing the configured hook.
 
-The `Hooker` on mainnet has one single hook targeting the [`FeeDistributor`](https://etherscan.io/address/0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914#code) calling its `burn` function for the crvUSD token. The `burn` function in turn transfers the entire crvUSD balance from the caller (=`Hooker`) to itself and makes it available to veCRV holders. 
+The `Hooker` on mainnet has one single hook targeting the `FeeDistributor` calling its `burn` function for the crvUSD token. The `burn` function in turn transfers the entire crvUSD balance from the caller (=`Hooker`) to itself and makes it available to veCRV holders. 
 
 ### Revised Workflow
 
