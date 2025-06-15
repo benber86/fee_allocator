@@ -61,4 +61,4 @@ def test_access_control_distribute_fees(global_fee_splitter, actual_crvusd, admi
 
     with boa.env.prank(random_address):
         with pytest.raises(Exception):
-            global_fee_splitter.distribute_fees(actual_crvusd.address)
+            global_fee_splitter.distribute_fees()

@@ -90,9 +90,7 @@ def add_fee_splitter_to_hooker(actual_hooker, actual_crvusd, global_fee_splitter
             [
                 (
                     global_fee_splitter.address,
-                    global_fee_splitter.distribute_fees.prepare_calldata(
-                        actual_crvusd.address
-                    ),
+                    global_fee_splitter.distribute_fees.prepare_calldata(),
                     EMPTY_COMPENSATION,
                     True,
                 )

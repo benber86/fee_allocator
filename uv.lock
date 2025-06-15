@@ -1,4 +1,5 @@
 version = 1
+revision = 1
 requires-python = ">=3.12"
 
 [[package]]
@@ -549,6 +550,7 @@ dependencies = [
     { name = "black" },
     { name = "mamushi" },
     { name = "moccasin" },
+    { name = "natrix" },
 ]
 
 [package.metadata]
@@ -556,6 +558,7 @@ requires-dist = [
     { name = "black", specifier = ">=25.1.0" },
     { name = "mamushi", specifier = ">=0.0.4" },
     { name = "moccasin", specifier = ">=0.3.8" },
+    { name = "natrix", specifier = ">=0.1.7" },
 ]
 
 [[package]]
@@ -965,6 +968,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/63/60/0582ce2eaced55f65a4406fc97beba256de4b7a95a0034c6576458c6519f/mypy_extensions-0.4.3.tar.gz", hash = "sha256:2d82818f5bb3e369420cb3c4060a7970edba416647068eb4c5343488a6c604a8", size = 4252 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/5c/eb/975c7c080f3223a5cdaff09612f3a5221e4ba534f7039db34c35d95fa6a5/mypy_extensions-0.4.3-py2.py3-none-any.whl", hash = "sha256:090fedd75945a69ae91ce1303b5824f428daf5a028d2f6ab8a299250a846f15d", size = 4470 },
+]
+
+[[package]]
+name = "natrix"
+version = "0.1.7"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ec/b8/daf0055023e96720e403ffaa970f09b7ac3175efacc9523e9a2faf2adf0e/natrix-0.1.7.tar.gz", hash = "sha256:f52aa54871ecaf80867ef2e650d2589083828de29f9bef01815c7c62acadf1eb", size = 115704 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/49/7c/c6b29b4a97314bb521695e181755b04d6342f8fc34973cffe9378a8814f7/natrix-0.1.7-py3-none-any.whl", hash = "sha256:d9645ccf4d74317e6f43a08c47e8a49417a1c4cd92ef401f0f6fc17f8169f931", size = 32921 },
 ]
 
 [[package]]

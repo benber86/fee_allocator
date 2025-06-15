@@ -183,4 +183,4 @@ def test_distribute_multiple_receivers(
 def test_distribute_fees_no_balance(global_fee_splitter, actual_hooker, actual_crvusd):
     with boa.env.prank(actual_hooker.address):
         with pytest.raises(Exception):
-            global_fee_splitter.distribute_fees(actual_crvusd.address)
+            global_fee_splitter.distribute_fees()
