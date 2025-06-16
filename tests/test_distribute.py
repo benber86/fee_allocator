@@ -9,7 +9,7 @@ AMOUNT_TO_DISTRIBUTE = int(100_000 * 1e18)
 def test_distribute_no_receivers(
     actual_fee_collector,
     actual_fee_distributor,
-    global_fee_splitter,
+    fee_allocator,
     actual_crvusd,
     admin,
     fee_receiver,
@@ -54,7 +54,7 @@ def test_distribute_no_receivers(
 def test_distribute_single_receiver(
     actual_fee_collector,
     actual_fee_distributor,
-    global_fee_splitter,
+    fee_allocator,
     actual_crvusd,
     admin,
     fee_receiver,
@@ -63,7 +63,7 @@ def test_distribute_single_receiver(
     # Set up a single receiver with 2000 bps (20%)
     receiver_weight = 2000
     with boa.env.prank(admin.address):
-        global_fee_splitter.set_receiver(fee_receiver, receiver_weight)
+        fee_allocator.set_receiver(fee_receiver, receiver_weight)
 
     collector_fee = actual_fee_collector.fee(8)
     with boa.env.prank(FEE_COLLECTOR_ADMIN):
@@ -109,7 +109,7 @@ def test_distribute_single_receiver(
 def test_distribute_multiple_receivers(
     actual_fee_collector,
     actual_fee_distributor,
-    global_fee_splitter,
+    fee_allocator,
     actual_crvusd,
     admin,
     multiple_fee_receivers,
@@ -117,8 +117,8 @@ def test_distribute_multiple_receivers(
 ):
     # Reset any existing receivers
     with boa.env.prank(admin.address):
-        for receiver in range(global_fee_splitter.n_receivers()):
-            global_fee_splitter.remove_receiver(receiver)
+        for receiver in range(fee_allocator.n_receivers()):
+            fee_allocator.remove_receiver(receiver)
 
     receiver_weights = [500, 1000, 1500, 2000]  # Total: 5000 bps (50%)
     receivers_to_use = multiple_fee_receivers[: len(receiver_weights)]
@@ -128,7 +128,7 @@ def test_distribute_multiple_receivers(
         configs.append((receivers_to_use[i], weight))
 
     with boa.env.prank(admin.address):
-        global_fee_splitter.set_multiple_receivers(configs)
+        fee_allocator.set_multiple_receivers(configs)
 
     collector_fee = actual_fee_collector.fee(8)
     with boa.env.prank(FEE_COLLECTOR_ADMIN):
@@ -180,7 +180,7 @@ def test_distribute_multiple_receivers(
     )
 
 
-def test_distribute_fees_no_balance(global_fee_splitter, actual_hooker, actual_crvusd):
+def test_distribute_fees_no_balance(fee_allocator, actual_hooker, actual_crvusd):
     with boa.env.prank(actual_hooker.address):
         with pytest.raises(Exception):
-            global_fee_splitter.distribute_fees()
+            fee_allocator.distribute_fees()

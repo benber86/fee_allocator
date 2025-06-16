@@ -5,7 +5,7 @@ import pytest
 from moccasin.boa_tools import VyperContract
 from moccasin.config import get_config
 from moccasin.moccasin_account import MoccasinAccount
-from src import GlobalFeeSplitter
+from src import FeeAllocator
 import moccasin
 
 EMPTY_COMPENSATION = (0, (0, 0, 0), 0, 0, False)
@@ -65,10 +65,10 @@ def mint_to_receiver(actual_crvusd, crvusd_minter) -> Callable[[str, int], None]
 
 
 @pytest.fixture(scope="session")
-def global_fee_splitter(
+def fee_allocator(
     actual_fee_distributor, actual_fee_collector, admin
 ) -> VyperContract:
-    return GlobalFeeSplitter.deploy(actual_fee_distributor, actual_fee_collector, admin)
+    return FeeAllocator.deploy(actual_fee_distributor, actual_fee_collector, admin)
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -84,13 +84,13 @@ def set_epoch_to_forward(
 
 
 @pytest.fixture(scope="session", autouse=True)
-def add_fee_splitter_to_hooker(actual_hooker, actual_crvusd, global_fee_splitter):
+def add_fee_allocator_to_hooker(actual_hooker, actual_crvusd, fee_allocator):
     with boa.env.prank(FEE_COLLECTOR_ADMIN):
         actual_hooker.set_hooks(
             [
                 (
-                    global_fee_splitter.address,
-                    global_fee_splitter.distribute_fees.prepare_calldata(),
+                    fee_allocator.address,
+                    fee_allocator.distribute_fees.prepare_calldata(),
                     EMPTY_COMPENSATION,
                     True,
                 )
@@ -101,7 +101,7 @@ def add_fee_splitter_to_hooker(actual_hooker, actual_crvusd, global_fee_splitter
                 (
                     actual_crvusd.address,
                     actual_crvusd.approve.prepare_calldata(
-                        global_fee_splitter.address, 2**256 - 1
+                        fee_allocator.address, 2**256 - 1
                     ),
                     EMPTY_COMPENSATION,
                     False,

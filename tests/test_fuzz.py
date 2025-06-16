@@ -13,10 +13,10 @@ from tests.conftest import ZERO_ADDRESS
 
 
 @pytest.mark.fuzz
-class GlobalFeeSplitterStateMachine(RuleBasedStateMachine):
+class FeeAllocatorStateMachine(RuleBasedStateMachine):
     def __init__(
         self,
-        global_fee_splitter,
+        fee_allocator,
         admin,
         actual_crvusd,
         actual_hooker,
@@ -24,7 +24,7 @@ class GlobalFeeSplitterStateMachine(RuleBasedStateMachine):
         mint_to_receiver,
     ):
         super().__init__()
-        self.global_fee_splitter = global_fee_splitter
+        self.fee_allocator = fee_allocator
         self.admin = admin
         self.actual_crvusd = actual_crvusd
         self.actual_hooker = actual_hooker
@@ -41,16 +41,16 @@ class GlobalFeeSplitterStateMachine(RuleBasedStateMachine):
     def set_receiver(self, receiver, weight):
         if receiver == ZERO_ADDRESS:
             return
-        if self.global_fee_splitter.n_receivers() >= self.global_fee_splitter.MAX_RECEIVERS():
+        if self.fee_allocator.n_receivers() >= self.fee_allocator.MAX_RECEIVERS():
             return
 
         with boa.env.prank(self.admin.address):
             try:
-                old_weight = self.global_fee_splitter.receiver_weights(receiver)
+                old_weight = self.fee_allocator.receiver_weights(receiver)
                 new_total = self.total_weight - old_weight + weight
 
                 if new_total <= 5000:
-                    self.global_fee_splitter.set_receiver(receiver, weight)
+                    self.fee_allocator.set_receiver(receiver, weight)
 
                     if old_weight == 0:
                         self.active_receivers.append(receiver)
@@ -73,8 +73,8 @@ class GlobalFeeSplitterStateMachine(RuleBasedStateMachine):
 
         with boa.env.prank(self.admin.address):
             try:
-                weight = self.global_fee_splitter.receiver_weights(receiver)
-                self.global_fee_splitter.remove_receiver(receiver)
+                weight = self.fee_allocator.receiver_weights(receiver)
+                self.fee_allocator.remove_receiver(receiver)
 
                 self.active_receivers.remove(receiver)
                 self.total_weight -= weight
@@ -100,7 +100,7 @@ class GlobalFeeSplitterStateMachine(RuleBasedStateMachine):
                     self.actual_fee_distributor.address
                 )
 
-                self.global_fee_splitter.distribute_fees(self.actual_crvusd.address)
+                self.fee_allocator.distribute_fees(self.actual_crvusd.address)
 
                 post_balances = {
                     receiver: self.actual_crvusd.balanceOf(receiver)
@@ -131,24 +131,24 @@ class GlobalFeeSplitterStateMachine(RuleBasedStateMachine):
 
     @invariant()
     def total_weight_invariant(self):
-        assert self.global_fee_splitter.total_weight() == self.total_weight
-        assert self.global_fee_splitter.total_weight() <= 5000
+        assert self.fee_allocator.total_weight() == self.total_weight
+        assert self.fee_allocator.total_weight() <= 5000
 
     @invariant()
     def receiver_count_invariant(self):
-        assert self.global_fee_splitter.n_receivers() == len(self.active_receivers)
-        assert self.global_fee_splitter.n_receivers() <= 10
+        assert self.fee_allocator.n_receivers() == len(self.active_receivers)
+        assert self.fee_allocator.n_receivers() <= 10
 
     @invariant()
     def distributor_weight_invariant(self):
         assert (
-            self.global_fee_splitter.distributor_weight() == 10000 - self.total_weight
+            self.fee_allocator.distributor_weight() == 10000 - self.total_weight
         )
 
 
 @pytest.mark.fuzz
-def test_global_fee_splitter(
-    global_fee_splitter,
+def test_fee_allocator(
+    fee_allocator,
     admin,
     actual_crvusd,
     actual_hooker,
@@ -156,8 +156,8 @@ def test_global_fee_splitter(
     mint_to_receiver,
 ):
     run_state_machine_as_test(
-        lambda: GlobalFeeSplitterStateMachine(
-            global_fee_splitter,
+        lambda: FeeAllocatorStateMachine(
+            fee_allocator,
             admin,
             actual_crvusd,
             actual_hooker,
