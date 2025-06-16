@@ -26,7 +26,7 @@ The `Hooker` on mainnet has one single hook targeting the `FeeDistributor` calli
 
 The `FeeAllocator` contract is inserted in the current workflow by replacing the mainnet `Hooker`'s hook with one that calls `distribute_fees` on the `FeeAllocator` instead.
 
-The `FeeAllocator` will transfer the `Hooker`'s crvUSD balance to itself, allocate the funds to each of the specified receivers according to their weight. Afterwards, it calls `burn` on the `FeeDistributor` which transfers the remaining balance to the `FeeDistributor` and makes it available to veCRV holders.
+The `FeeAllocator` will allocate funds from the `Hooker`'s crvUSD balance to each of the specified receivers according to their weight. Afterwards, it calls `burn` on the `FeeDistributor` which transfers the remaining balance to the `FeeDistributor` and makes it available to veCRV holders.
 
 ## Specifying Receivers
 
@@ -39,3 +39,12 @@ fee_allocator.set_receiver(dev_fund, 500)          # 5%
 ```
 
 Receivers can only be added, modified or removed by the DAO.
+
+## Running the tests
+
+```
+uv venv
+source .venv/bin/activate
+uv install .
+uv run mox test
+```
