@@ -45,3 +45,53 @@ abi_from_explorer = true
 [networks.mainnet-fork.contracts.crvusd]
 address = "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E"
 abi_from_explorer = true
+
+[networks.mainnet-fork.contracts.agent]
+address = "0x40907540d8a6C65c637785e8f8B742ae6b0b9968"
+abi_from_explorer = true
+
+[networks.mainnet-fork.contracts.voting]
+address = "0xE478de485ad2fe566d49342Cbd03E49ed7DB3356"
+abi_from_explorer = true
+
+[networks.mainnet-fork.contracts.community_fund]
+address = "0xe3997288987e6297ad550a69b31439504f513267"
+abi_from_explorer = true
+
+[networks.mainnet-fork.contracts.vecrv]
+address = "0x5f3b5dfeb7b28cdbd7faba78963ee202a494e2a2"
+abi_from_explorer = true
+
+[networks.mainnet-fork.contracts.crv_token]
+address = "0xD533a949740bb3306d119CC777fa900bA034cd52"
+abi_from_explorer = true
+
+#### MAIN NET CONTRACTS
+
+[networks.mainnet.contracts.hooker]
+address = "0x9A9DF35cd8E88565694CA6AD5093c236C7f6f69D"
+abi_from_explorer = true
+
+[networks.mainnet.contracts.fee_distributor]
+address = "0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914"
+abi_from_explorer = true
+
+[networks.mainnet.contracts.fee_collector]
+address = "0xa2Bcd1a4Efbd04B63cd03f5aFf2561106ebCCE00"
+abi_from_explorer = true
+
+[networks.mainnet.contracts.crvusd]
+address = "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E"
+abi_from_explorer = true
+
+[networks.mainnet.contracts.agent]
+address = "0x40907540d8a6C65c637785e8f8B742ae6b0b9968"
+abi_from_explorer = true
+
+[networks.mainnet.contracts.voting]
+address = "0xE478de485ad2fe566d49342Cbd03E49ed7DB3356"
+abi_from_explorer = true
+
+[networks.mainnet.contracts.community_fund]
+address = "0xe3997288987e6297ad550a69b31439504f513267"
+abi_from_explorer = true

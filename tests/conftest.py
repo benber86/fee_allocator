@@ -1,3 +1,4 @@
+import time
 from typing import Callable
 
 import boa
@@ -36,6 +37,31 @@ def actual_fee_distributor() -> VyperContract:
 
 
 @pytest.fixture(scope="session")
+def crv_token() -> VyperContract:
+    return get_config().get_active_network().manifest_named("crv_token")
+
+
+@pytest.fixture(scope="session")
+def vecrv() -> VyperContract:
+    return get_config().get_active_network().manifest_named("vecrv")
+
+
+@pytest.fixture(scope="session")
+def community_fund() -> VyperContract:
+    return get_config().get_active_network().manifest_named("community_fund")
+
+
+@pytest.fixture(scope="session")
+def voting() -> VyperContract:
+    return get_config().get_active_network().manifest_named("voting")
+
+
+@pytest.fixture(scope="session")
+def agent() -> VyperContract:
+    return get_config().get_active_network().manifest_named("agent")
+
+
+@pytest.fixture(scope="session")
 def admin() -> MoccasinAccount:
     return moccasin.config.get_active_network().get_default_account()
 
@@ -60,7 +86,6 @@ def mint_to_receiver(actual_crvusd, crvusd_minter) -> Callable[[str, int], None]
     def inner(receiver: str, amount: int):
         with boa.env.prank(crvusd_minter):
             actual_crvusd.mint(receiver, amount)
-
     return inner
 
 
@@ -70,6 +95,15 @@ def fee_allocator(
 ) -> VyperContract:
     return FeeAllocator.deploy(actual_fee_distributor, actual_fee_collector, admin)
 
+
+@pytest.fixture(scope="session", autouse=True)
+def lock_vecrv_on_main(crv_token, vecrv, admin):
+    amount = int(10_000 * 1e18)
+    with boa.env.prank(vecrv.address):
+        crv_token.transfer(admin, amount)
+    with boa.env.prank(admin.address):
+        crv_token.approve(vecrv, amount)
+        vecrv.create_lock(amount, int(time.time()) + WEEK * 52 * 4)
 
 @pytest.fixture(scope="session", autouse=True)
 def set_epoch_to_forward(
