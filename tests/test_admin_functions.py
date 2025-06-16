@@ -43,9 +43,7 @@ def test_set_multiple_receivers_empty_array(fee_allocator, admin):
             fee_allocator.set_multiple_receivers([])
 
 
-def test_set_multiple_receivers_valid(
-    fee_allocator, admin, multiple_fee_receivers
-):
+def test_set_multiple_receivers_valid(fee_allocator, admin, multiple_fee_receivers):
     with boa.env.prank(admin.address):
         receivers = multiple_fee_receivers[:3]
         weights = [1000, 1500, 2000]
@@ -63,9 +61,7 @@ def test_set_multiple_receivers_valid(
 def test_set_multiple_receivers_exceeding_max_weight(fee_allocator, admin):
     with boa.env.prank(admin.address):
         with pytest.raises(Exception):
-            fee_allocator.set_multiple_receivers(
-                [(boa.env.generate_address(), 5001)]
-            )
+            fee_allocator.set_multiple_receivers([(boa.env.generate_address(), 5001)])
 
 
 def test_remove_nonexistent_receiver(fee_allocator, admin):

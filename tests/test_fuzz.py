@@ -141,9 +141,7 @@ class FeeAllocatorStateMachine(RuleBasedStateMachine):
 
     @invariant()
     def distributor_weight_invariant(self):
-        assert (
-            self.fee_allocator.distributor_weight() == 10000 - self.total_weight
-        )
+        assert self.fee_allocator.distributor_weight() == 10000 - self.total_weight
 
 
 @pytest.mark.fuzz

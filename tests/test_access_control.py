@@ -14,9 +14,7 @@ def test_access_control_set_receiver(fee_allocator, admin, fee_receiver):
         assert fee_allocator.receiver_weights(fee_receiver) == 1000
 
 
-def test_access_control_set_multiple_receivers(
-    fee_allocator, admin, fee_receiver
-):
+def test_access_control_set_multiple_receivers(fee_allocator, admin, fee_receiver):
     random_address = boa.env.generate_address()
 
     with boa.env.prank(random_address):

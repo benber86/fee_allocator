@@ -126,7 +126,9 @@ def _set_receiver(_receiver: address, _weight: uint256):
     self.receiver_weights[_receiver] = _weight
     self.total_weight = new_total_weight  # Update the stored total weight
 
-    log ReceiverSet(receiver=_receiver, old_weight=old_weight, new_weight=_weight)
+    log ReceiverSet(
+        receiver=_receiver, old_weight=old_weight, new_weight=_weight
+    )
 
 
 @external

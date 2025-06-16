@@ -86,13 +86,12 @@ def mint_to_receiver(actual_crvusd, crvusd_minter) -> Callable[[str, int], None]
     def inner(receiver: str, amount: int):
         with boa.env.prank(crvusd_minter):
             actual_crvusd.mint(receiver, amount)
+
     return inner
 
 
 @pytest.fixture(scope="session")
-def fee_allocator(
-    actual_fee_distributor, actual_fee_collector, admin
-) -> VyperContract:
+def fee_allocator(actual_fee_distributor, actual_fee_collector, admin) -> VyperContract:
     return FeeAllocator.deploy(actual_fee_distributor, actual_fee_collector, admin)
 
 
@@ -104,6 +103,7 @@ def lock_vecrv_on_main(crv_token, vecrv, admin):
     with boa.env.prank(admin.address):
         crv_token.approve(vecrv, amount)
         vecrv.create_lock(amount, int(time.time()) + WEEK * 52 * 4)
+
 
 @pytest.fixture(scope="session", autouse=True)
 def set_epoch_to_forward(

@@ -4,6 +4,7 @@ import os
 
 PINATA_TOKEN = os.environ.get("PINATA_TOKEN")
 
+
 def pin_to_ipfs(description: str):
     """Uploads vote description to IPFS via Pinata and returns the IPFS hash.
 
