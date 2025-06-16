@@ -8,10 +8,13 @@ dependencies = [
     "black>=25.1.0",
     "mamushi>=0.0.4",
     "moccasin>=0.3.8",
-    "natrix>=0.1.7",
+    "pre-commit>=4.2.0",
 ]
 [tool.pytest.ini_options]
 markers = [
     "fuzz: marks tests that use fuzzing techniques"
 ]
 addopts = "-k 'not fuzz'"
+
+[tool.isort]
+profile = "black"

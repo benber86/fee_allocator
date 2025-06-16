@@ -1,17 +1,23 @@
-from script.utils.ipfs import pin_to_ipfs
-from src import FeeAllocator
 from moccasin.boa_tools import VyperContract
 from moccasin.config import get_config
 
+from script.utils.ipfs import pin_to_ipfs
+from src import FeeAllocator
 from tests.conftest import EMPTY_COMPENSATION
 
-FEE_COLLECTOR = get_config().get_active_network().manifest_named("fee_collector")
+FEE_COLLECTOR = (
+    get_config().get_active_network().manifest_named("fee_collector")
+)
 HOOKER = get_config().get_active_network().manifest_named("hooker")
-FEE_DISTRIBUTOR = get_config().get_active_network().manifest_named("fee_distributor")
+FEE_DISTRIBUTOR = (
+    get_config().get_active_network().manifest_named("fee_distributor")
+)
 CRVUSD = get_config().get_active_network().manifest_named("crvusd")
 AGENT = get_config().get_active_network().manifest_named("agent")
 VOTING = get_config().get_active_network().manifest_named("voting")
-COMMUNITY_FUND = get_config().get_active_network().manifest_named("community_fund")
+COMMUNITY_FUND = (
+    get_config().get_active_network().manifest_named("community_fund")
+)
 
 
 def prepare_actions(fee_allocator):
@@ -27,16 +33,20 @@ def prepare_actions(fee_allocator):
         ]
     )
     # 2. Cancel previous distributor approval
-    cancel_distributor_approval_calldata = HOOKER.one_time_hooks.prepare_calldata(
-        [
-            (
-                CRVUSD.address,
-                CRVUSD.approve.prepare_calldata(FEE_DISTRIBUTOR.address, 0),
-                EMPTY_COMPENSATION,
-                False,
-            )
-        ],
-        [(0, 0, b"")],
+    cancel_distributor_approval_calldata = (
+        HOOKER.one_time_hooks.prepare_calldata(
+            [
+                (
+                    CRVUSD.address,
+                    CRVUSD.approve.prepare_calldata(
+                        FEE_DISTRIBUTOR.address, 0
+                    ),
+                    EMPTY_COMPENSATION,
+                    False,
+                )
+            ],
+            [(0, 0, b"")],
+        )
     )
     # 3. Approve allocator to spend hooker's crvUSD
     approve_allocator_for_crvusd_spend_calldata = (
@@ -44,7 +54,9 @@ def prepare_actions(fee_allocator):
             [
                 (
                     CRVUSD.address,
-                    CRVUSD.approve.prepare_calldata(fee_allocator.address, 2**256 - 1),
+                    CRVUSD.approve.prepare_calldata(
+                        fee_allocator.address, 2**256 - 1
+                    ),
                     EMPTY_COMPENSATION,
                     False,
                 )
@@ -54,7 +66,9 @@ def prepare_actions(fee_allocator):
     )
     # 4. Set the community fund as a recipient for 10% of incoming fees
     create_community_fund_allocation_call_data = (
-        fee_allocator.set_receiver.prepare_calldata(COMMUNITY_FUND.address, 1000)
+        fee_allocator.set_receiver.prepare_calldata(
+            COMMUNITY_FUND.address, 1000
+        )
     )
     return [
         (HOOKER.address, set_allocator_as_hook_calldata),

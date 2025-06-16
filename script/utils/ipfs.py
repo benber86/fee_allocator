@@ -1,6 +1,7 @@
 # From: https://github.dev/mo-anon/curve-dao/blob/main/curve_dao/addresses.py
-import requests
 import os
+
+import requests
 
 PINATA_TOKEN = os.environ.get("PINATA_TOKEN")
 

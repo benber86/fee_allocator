@@ -39,7 +39,9 @@ def test_distribute_no_receivers(
         actual_fee_distributor
     )
 
-    effective_caller_fee = pre_distribution_collector_balance * collector_fee * 1e-18
+    effective_caller_fee = (
+        pre_distribution_collector_balance * collector_fee * 1e-18
+    )
     assert post_distribution_caller_balance == pytest.approx(
         pre_distribution_caller_balance + effective_caller_fee
     )
@@ -89,8 +91,12 @@ def test_distribute_single_receiver(
     )
     post_distribution_receiver_balance = actual_crvusd.balanceOf(fee_receiver)
 
-    effective_caller_fee = pre_distribution_collector_balance * collector_fee * 1e-18
-    remaining_amount = pre_distribution_collector_balance - effective_caller_fee
+    effective_caller_fee = (
+        pre_distribution_collector_balance * collector_fee * 1e-18
+    )
+    remaining_amount = (
+        pre_distribution_collector_balance - effective_caller_fee
+    )
     receiver_amount = remaining_amount * receiver_weight // 10000
     distributor_amount = remaining_amount - receiver_amount
 
@@ -158,8 +164,12 @@ def test_distribute_multiple_receivers(
         actual_crvusd.balanceOf(receiver) for receiver in receivers_to_use
     ]
 
-    effective_caller_fee = pre_distribution_collector_balance * collector_fee * 1e-18
-    remaining_amount = pre_distribution_collector_balance - effective_caller_fee
+    effective_caller_fee = (
+        pre_distribution_collector_balance * collector_fee * 1e-18
+    )
+    remaining_amount = (
+        pre_distribution_collector_balance - effective_caller_fee
+    )
 
     total_to_receivers = 0
     for i, weight in enumerate(receiver_weights):
@@ -180,7 +190,9 @@ def test_distribute_multiple_receivers(
     )
 
 
-def test_distribute_fees_no_balance(fee_allocator, actual_hooker, actual_crvusd):
+def test_distribute_fees_no_balance(
+    fee_allocator, actual_hooker, actual_crvusd
+):
     with boa.env.prank(actual_hooker.address):
         with pytest.raises(Exception):
             fee_allocator.distribute_fees()

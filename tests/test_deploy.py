@@ -41,7 +41,9 @@ def test_deployment(
     pre_distribution_distributor_balance = actual_crvusd.balanceOf(
         actual_fee_distributor
     )
-    pre_distribution_community_balance = actual_crvusd.balanceOf(community_fund.address)
+    pre_distribution_community_balance = actual_crvusd.balanceOf(
+        community_fund.address
+    )
     pre_distribution_caller_balance = actual_crvusd.balanceOf(admin)
 
     actual_fee_collector.forward([(0, 0, b"")], admin.address)

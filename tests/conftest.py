@@ -2,12 +2,13 @@ import time
 from typing import Callable
 
 import boa
+import moccasin
 import pytest
 from moccasin.boa_tools import VyperContract
 from moccasin.config import get_config
 from moccasin.moccasin_account import MoccasinAccount
+
 from src import FeeAllocator
-import moccasin
 
 EMPTY_COMPENSATION = (0, (0, 0, 0), 0, 0, False)
 
@@ -82,7 +83,9 @@ def crvusd_minter(actual_crvusd):
 
 
 @pytest.fixture(scope="session")
-def mint_to_receiver(actual_crvusd, crvusd_minter) -> Callable[[str, int], None]:
+def mint_to_receiver(
+    actual_crvusd, crvusd_minter
+) -> Callable[[str, int], None]:
     def inner(receiver: str, amount: int):
         with boa.env.prank(crvusd_minter):
             actual_crvusd.mint(receiver, amount)
@@ -91,8 +94,12 @@ def mint_to_receiver(actual_crvusd, crvusd_minter) -> Callable[[str, int], None]
 
 
 @pytest.fixture(scope="session")
-def fee_allocator(actual_fee_distributor, actual_fee_collector, admin) -> VyperContract:
-    return FeeAllocator.deploy(actual_fee_distributor, actual_fee_collector, admin)
+def fee_allocator(
+    actual_fee_distributor, actual_fee_collector, admin
+) -> VyperContract:
+    return FeeAllocator.deploy(
+        actual_fee_distributor, actual_fee_collector, admin
+    )
 
 
 @pytest.fixture(scope="session", autouse=True)

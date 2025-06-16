@@ -1,13 +1,13 @@
-from hypothesis.stateful import (
-    RuleBasedStateMachine,
-    rule,
-    invariant,
-    run_state_machine_as_test,
-)
-from hypothesis import settings
-from boa.test.strategies import strategy
 import boa
 import pytest
+from boa.test.strategies import strategy
+from hypothesis import settings
+from hypothesis.stateful import (
+    RuleBasedStateMachine,
+    invariant,
+    rule,
+    run_state_machine_as_test,
+)
 
 from tests.conftest import ZERO_ADDRESS
 
@@ -41,7 +41,10 @@ class FeeAllocatorStateMachine(RuleBasedStateMachine):
     def set_receiver(self, receiver, weight):
         if receiver == ZERO_ADDRESS:
             return
-        if self.fee_allocator.n_receivers() >= self.fee_allocator.MAX_RECEIVERS():
+        if (
+            self.fee_allocator.n_receivers()
+            >= self.fee_allocator.MAX_RECEIVERS()
+        ):
             return
 
         with boa.env.prank(self.admin.address):
@@ -83,7 +86,9 @@ class FeeAllocatorStateMachine(RuleBasedStateMachine):
                 print("Unexpected exception in remove_receiver")
                 raise e
 
-    @rule(amount=strategy("uint256", min_value=1000, max_value=1000000 * 10**18))
+    @rule(
+        amount=strategy("uint256", min_value=1000, max_value=1000000 * 10**18)
+    )
     def distribute_fees(self, amount):
         if amount == 0:
             return
@@ -113,8 +118,12 @@ class FeeAllocatorStateMachine(RuleBasedStateMachine):
                 total_distributed = 0
                 for receiver in self.active_receivers:
                     received = post_balances[receiver] - pre_balances[receiver]
-                    expected = amount * self.receiver_weights[receiver] // 10000
-                    assert abs(received - expected) <= len(self.active_receivers)
+                    expected = (
+                        amount * self.receiver_weights[receiver] // 10000
+                    )
+                    assert abs(received - expected) <= len(
+                        self.active_receivers
+                    )
                     total_distributed += received
 
                 distributor_received = (
@@ -141,7 +150,10 @@ class FeeAllocatorStateMachine(RuleBasedStateMachine):
 
     @invariant()
     def distributor_weight_invariant(self):
-        assert self.fee_allocator.distributor_weight() == 10000 - self.total_weight
+        assert (
+            self.fee_allocator.distributor_weight()
+            == 10000 - self.total_weight
+        )
 
 
 @pytest.mark.fuzz

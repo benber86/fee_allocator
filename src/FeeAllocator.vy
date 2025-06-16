@@ -73,9 +73,7 @@ def __init__(
     @param _owner The address of the contract's owner
     """
     assert _owner != empty(address), "zeroaddr: owner"
-    assert _fee_distributor.address != empty(
-        address
-    ), "zeroaddr: fee_distributor"
+    assert _fee_distributor.address != empty(address), "zeroaddr: fee_distributor"
     assert _fee_collector.address != empty(address), "zeroaddr: fee_collector"
 
     ownable.__init__()
@@ -108,14 +106,10 @@ def _set_receiver(_receiver: address, _weight: uint256):
     if old_weight > 0:
         new_total_weight = new_total_weight - old_weight + _weight
     else:
-        assert (
-            len(self.receivers) < MAX_RECEIVERS
-        ), "receivers: max limit reached"
+        assert (len(self.receivers) < MAX_RECEIVERS), "receivers: max limit reached"
         new_total_weight += _weight
 
-    assert (
-        new_total_weight <= MAX_TOTAL_WEIGHT
-    ), "receivers: exceeds max total weight"
+    assert (new_total_weight <= MAX_TOTAL_WEIGHT), "receivers: exceeds max total weight"
 
     if old_weight == 0:
         self.receiver_indices[_receiver] = (
@@ -126,9 +120,7 @@ def _set_receiver(_receiver: address, _weight: uint256):
     self.receiver_weights[_receiver] = _weight
     self.total_weight = new_total_weight  # Update the stored total weight
 
-    log ReceiverSet(
-        receiver=_receiver, old_weight=old_weight, new_weight=_weight
-    )
+    log ReceiverSet(receiver=_receiver, old_weight=old_weight, new_weight=_weight)
 
 
 @external
@@ -193,9 +185,7 @@ def distribute_fees():
     """
     @notice Distribute accumulated crvUSD fees to receivers based on their weights
     """
-    assert (
-        msg.sender == staticcall fee_collector.hooker()
-    ), "distribute: hooker only"
+    assert (msg.sender == staticcall fee_collector.hooker()), "distribute: hooker only"
     balance: uint256 = staticcall fee_token.balanceOf(msg.sender)
     assert balance > 0, "receivers: no fees to distribute"
 
@@ -205,17 +195,11 @@ def distribute_fees():
         weight: uint256 = self.receiver_weights[receiver]
         amount: uint256 = balance * weight // MAX_BPS
         if amount > 0:
-            extcall fee_token.transferFrom(
-                msg.sender, receiver, amount, default_return_value=True
-            )
+            extcall fee_token.transferFrom(msg.sender, receiver, amount, default_return_value=True)
             remaining_balance -= amount
-    extcall fee_token.transferFrom(
-        msg.sender, self, remaining_balance, default_return_value=True
-    )
+    extcall fee_token.transferFrom(msg.sender, self, remaining_balance, default_return_value=True)
     extcall fee_distributor.burn(fee_token.address)
-    log FeesDistributed(
-        total_amount=balance, distributor_share=remaining_balance
-    )
+    log FeesDistributed(total_amount=balance, distributor_share=remaining_balance)
 
 
 @external
