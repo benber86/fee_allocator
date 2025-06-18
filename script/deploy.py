@@ -15,9 +15,7 @@ FEE_DISTRIBUTOR = (
 CRVUSD = get_config().get_active_network().manifest_named("crvusd")
 AGENT = get_config().get_active_network().manifest_named("agent")
 VOTING = get_config().get_active_network().manifest_named("voting")
-COMMUNITY_FUND = (
-    get_config().get_active_network().manifest_named("community_fund")
-)
+TREASURY = get_config().get_active_network().manifest_named("treasury")
 
 
 def prepare_actions(fee_allocator):
@@ -66,9 +64,7 @@ def prepare_actions(fee_allocator):
     )
     # 4. Set the community fund as a recipient for 10% of incoming fees
     create_community_fund_allocation_call_data = (
-        fee_allocator.set_receiver.prepare_calldata(
-            COMMUNITY_FUND.address, 1000
-        )
+        fee_allocator.set_receiver.prepare_calldata(TREASURY.address, 1000)
     )
     return [
         (HOOKER.address, set_allocator_as_hook_calldata),
@@ -106,7 +102,6 @@ def deploy() -> (VyperContract, int, str, list):
     actions = prepare_actions(fee_allocator)
     agent_actions = []
     for target, calldata in actions:
-        # Agent.execute(target, 0, calldata)
         agent_calldata = AGENT.execute.prepare_calldata(target, 0, calldata)
         agent_actions.append((AGENT.address, agent_calldata))
     execution_script = encode_call_script(agent_actions)

@@ -48,8 +48,8 @@ def vecrv() -> VyperContract:
 
 
 @pytest.fixture(scope="session")
-def community_fund() -> VyperContract:
-    return get_config().get_active_network().manifest_named("community_fund")
+def treasury() -> VyperContract:
+    return get_config().get_active_network().manifest_named("treasury")
 
 
 @pytest.fixture(scope="session")

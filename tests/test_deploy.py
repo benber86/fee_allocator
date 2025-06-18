@@ -1,41 +1,27 @@
 import boa
-from boa.contracts.abi.abi_contract import ABIContractFactory
 
-from script.deploy import deploy
+from script.deploy import deploy, encode_call_script
 from tests.conftest import WEEK
 
 CONVEX = "0x989AEb4d175e16225E39E87d0D97A3360524AD80"
 STD = "0x52f541764E6e90eeBc5c21Ff570De0e2D63766B6"
 MIN_VESTING_DURATION = 86400 * 365
-VESTING_ESCROW_CLAIM_ABI = [
-    {
-        "name": "claim",
-        "outputs": [],
-        "inputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function",
-    },
-    {
-        "name": "claim",
-        "outputs": [],
-        "inputs": [{"type": "address", "name": "addr"}],
-        "stateMutability": "nonpayable",
-        "type": "function",
-    },
-]
 
 
 def test_deployment(
     admin,
     voting,
-    community_fund,
+    treasury,
     actual_fee_distributor,
     actual_fee_collector,
     actual_hooker,
     actual_crvusd,
     crvusd_minter,
+    mint_to_receiver,
     agent,
 ):
+    # ensure there are some funds to distribute (e.g. if a distribution has recently happened)
+    mint_to_receiver(actual_fee_collector.address, int(10_000 * 1e18))
     # Test the deployment & vote creation
     fee_allocator, proposal_id, metadata, logs = deploy()
     assert voting.votesLength() == proposal_id + 1
@@ -53,7 +39,7 @@ def test_deployment(
     voting.executeVote(proposal_id)
     prop_details = voting.getVote(proposal_id)
     assert prop_details[1]  # executed
-    assert fee_allocator.receiver_weights(community_fund.address) == 1_000
+    assert fee_allocator.receiver_weights(treasury.address) == 1_000
 
     # Test the distribution workflow
     pre_distribution_collector_balance = actual_crvusd.balanceOf(
@@ -62,8 +48,8 @@ def test_deployment(
     pre_distribution_distributor_balance = actual_crvusd.balanceOf(
         actual_fee_distributor
     )
-    pre_distribution_community_balance = actual_crvusd.balanceOf(
-        community_fund.address
+    pre_distribution_treasury_balance = actual_crvusd.balanceOf(
+        treasury.address
     )
     pre_distribution_caller_balance = actual_crvusd.balanceOf(admin)
 
@@ -72,8 +58,8 @@ def test_deployment(
     post_distribution_collector_balance = actual_crvusd.balanceOf(
         actual_fee_collector.address
     )
-    post_distribution_community_balance = actual_crvusd.balanceOf(
-        community_fund.address
+    post_distribution_treasury_balance = actual_crvusd.balanceOf(
+        treasury.address
     )
     post_distribution_distributor_balance = actual_crvusd.balanceOf(
         actual_fee_distributor
@@ -83,13 +69,13 @@ def test_deployment(
     pre = {
         "collector": pre_distribution_collector_balance * 1e-18,
         "distributor": pre_distribution_distributor_balance * 1e-18,
-        "community": pre_distribution_community_balance * 1e-18,
+        "treasury": pre_distribution_treasury_balance * 1e-18,
         "caller": pre_distribution_caller_balance * 1e-18,
     }
     post = {
         "collector": post_distribution_collector_balance * 1e-18,
         "distributor": post_distribution_distributor_balance * 1e-18,
-        "community": post_distribution_community_balance * 1e-18,
+        "treasury": post_distribution_treasury_balance * 1e-18,
         "caller": post_distribution_caller_balance * 1e-18,
     }
 
@@ -112,25 +98,28 @@ def test_deployment(
             f"{row[0]:<12} {row[1]:>10.2f} {row[2]:>10.2f} {row[3]:>10.2f} {pct(row[4]):>18}"
         )
 
-    assert abs(table[2][4] - 0.10) < 0.01  # 10% goes to community fund ±1%
+    assert abs(table[2][4] - 0.10) < 0.01  # 10% goes to treasury fund ±1%
 
-    # Test that we can create a vest from the community fund using crvusd
+    # now create a vote to send the funds to a grantee
     grantee = boa.env.generate_address()
-    with boa.env.prank(agent.address):
-        vesting_contract_address = community_fund.deploy_vesting_contract(
-            actual_crvusd.address,
-            grantee,
-            post_distribution_community_balance,
-            False,
-            MIN_VESTING_DURATION,
-        )
+    calldata = agent.execute.prepare_calldata(
+        treasury.address,
+        0,
+        treasury.retrieveToken.prepare_calldata(
+            actual_crvusd.address, grantee
+        ),
+    )
+    script = encode_call_script([(agent.address, calldata)])
+    proposal_id = voting.newVote(script, "gib monies to grantee", False, False)
 
-    boa.env.time_travel(seconds=MIN_VESTING_DURATION + 1)
+    with boa.env.prank(STD):
+        voting.votePct(proposal_id, int(1e18), 0, False)
+    with boa.env.prank(CONVEX):
+        voting.votePct(proposal_id, int(1e18), 0, False)
+    boa.env.time_travel(seconds=WEEK)
+    assert voting.canExecute(proposal_id)
+    voting.executeVote(proposal_id)
 
-    vesting_contract = ABIContractFactory(
-        "Vesting", VESTING_ESCROW_CLAIM_ABI
-    ).at(vesting_contract_address)
-    vesting_contract.claim(grantee)
     assert (
-        actual_crvusd.balanceOf(grantee) == post_distribution_community_balance
+        actual_crvusd.balanceOf(grantee) == post_distribution_treasury_balance
     )
