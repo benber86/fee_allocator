@@ -97,7 +97,7 @@ def encode_call_script(actions):
 
 
 def deploy() -> (VyperContract, int, str, list):
-    description = "Deploy the fee allocator"
+    description = "Activate the fee allocator and redirect 10% of revenue to community fund - https://gov.curve.finance/t/activate-the-fee-allocator-and-redirect-10-of-revenue-to-community-fund/10676"  # noqa
     fee_allocator = FeeAllocator.deploy(
         FEE_DISTRIBUTOR,  # fee distributor
         FEE_COLLECTOR,  # fee collector
@@ -114,11 +114,19 @@ def deploy() -> (VyperContract, int, str, list):
     proposal_id = VOTING.newVote(
         execution_script,
         metadata,
-        True,  # cast_vote - automatically vote yes
+        False,  # cast_vote - automatically vote yes
         False,  # executes_if_decided - execute immediately if vote passes
     )
     return fee_allocator, proposal_id, metadata, VOTING.get_logs()
 
 
+def construst():
+    # If your contract constructor is: __init__(address fee_distributor, address fee_collector, address agent)
+    fa = FeeAllocator.at("0x874942096Ed129C1a7c99de6C7Aa6fa0B679f322")
+    result = get_config().get_active_network().moccasin_verify(fa)
+    result.wait_for_verification()
+    print(fa.hex())
+
+
 def moccasin_main() -> VyperContract:
-    return deploy()
+    return construst()

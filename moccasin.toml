@@ -28,6 +28,7 @@ explorer_type = "etherscan"
 explorer_api_key="${ETHERSCAN_TOKEN}"
 chain_id = 1
 fork = false
+default_account_name="gramsci"
 
 
 [networks.mainnet-fork.contracts.fee_collector]

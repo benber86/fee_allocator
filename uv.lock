@@ -575,7 +575,7 @@ dependencies = [
 requires-dist = [
     { name = "black", specifier = ">=25.1.0" },
     { name = "mamushi", specifier = ">=0.0.4" },
-    { name = "moccasin", specifier = ">=0.3.8" },
+    { name = "moccasin", specifier = "==0.4.0" },
     { name = "pre-commit", specifier = ">=4.2.0" },
 ]
 
@@ -977,7 +977,7 @@ wheels = [
 
 [[package]]
 name = "moccasin"
-version = "0.3.8"
+version = "0.4.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ipykernel" },
@@ -992,9 +992,9 @@ dependencies = [
     { name = "uv" },
     { name = "vyper" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a4/38/b4b969da9d8171660d2050ba083284c8b557f84e4270fd5227fc2ef09b7c/moccasin-0.3.8.tar.gz", hash = "sha256:56af3776882f347137e9149be47ce9169311414b7061a3a669c860bdb461d3a6", size = 627766 }
+sdist = { url = "https://files.pythonhosted.org/packages/ba/de/8234cf1b537f7103e12f63e7259f01fec3ce44d6616565cd18df1d60196a/moccasin-0.4.0.tar.gz", hash = "sha256:f8d58bc7e1f73e07b628950e4d39d0c8f895489f0c44134eab036ea4054c5530", size = 641146 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5e/19/18a75ad2d7545c29bf18a6f7095ecd0fb79f1e6f2f97cd813df4a0a3d636/moccasin-0.3.8-py3-none-any.whl", hash = "sha256:54ddaf6417fcabb908f9c835d477d33c29ad1a8d54aa0d62c52e5e975051d684", size = 65912 },
+    { url = "https://files.pythonhosted.org/packages/e7/cd/dba52cfc32b3b4cca4e9a9064335168ac4777f9ed582665d614c33f5f119/moccasin-0.4.0-py3-none-any.whl", hash = "sha256:f52f70c114e80a918426b09eea2098e83cde5bfceced61f9fdb58eb9825fc35e", size = 70966 },
 ]
 
 [[package]]
@@ -1594,14 +1594,14 @@ wheels = [
 
 [[package]]
 name = "titanoboa-zksync"
-version = "0.2.9"
+version = "0.2.10"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "titanoboa" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ec/7c/35d9fbc910b0b8855a77d5001d354d19e52dbfa8f0536cafe1cf49e7cabe/titanoboa_zksync-0.2.9.tar.gz", hash = "sha256:120f498f3a40f08c90d43264f8ca7d42b85d42e7977deb6abfaa4407a0711062", size = 26083 }
+sdist = { url = "https://files.pythonhosted.org/packages/f5/3e/fd3e4579dd06f24a710dc6986ca309ff15393d9d77754abf398ed2dabc3e/titanoboa_zksync-0.2.10.tar.gz", hash = "sha256:c22ca0b9632acb852acb6418c8cbbd1be00855676480d72abf99525882599ea6", size = 26254 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c4/06/9ca1545bdafbeb3b681f65b850bf54e2c0cf25c64dff150210a2df03833a/titanoboa_zksync-0.2.9-py3-none-any.whl", hash = "sha256:ee95c2c8089519dc8579c97898e1edd02eeaef96970d68f5abbd28b365e49e18", size = 25478 },
+    { url = "https://files.pythonhosted.org/packages/36/2f/b21f8e88e8263340a7cc3c4cd1f12c58c6dcce2c25237482c197a6c42af6/titanoboa_zksync-0.2.10-py3-none-any.whl", hash = "sha256:ae204fbc5f62cfe04175219eab11e636b6a03cbe0ce90559eb326b9bf7619975", size = 25606 },
 ]
 
 [[package]]
