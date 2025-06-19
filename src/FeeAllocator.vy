@@ -186,7 +186,10 @@ def distribute_fees():
     @notice Distribute accumulated crvUSD fees to receivers based on their weights
     """
     assert (msg.sender == staticcall fee_collector.hooker()), "distribute: hooker only"
-    balance: uint256 = staticcall fee_token.balanceOf(msg.sender)
+
+    amount_receivable: uint256 = staticcall fee_token.balanceOf(msg.sender)
+    extcall fee_token.transferFrom(msg.sender, self, amount_receivable)
+    balance: uint256 = staticcall fee_token.balanceOf(self)
     assert balance > 0, "receivers: no fees to distribute"
 
     remaining_balance: uint256 = balance
@@ -195,9 +198,8 @@ def distribute_fees():
         weight: uint256 = self.receiver_weights[receiver]
         amount: uint256 = balance * weight // MAX_BPS
         if amount > 0:
-            extcall fee_token.transferFrom(msg.sender, receiver, amount, default_return_value=True)
+            extcall fee_token.transfer(receiver, amount, default_return_value=True)
             remaining_balance -= amount
-    extcall fee_token.transferFrom(msg.sender, self, remaining_balance, default_return_value=True)
     extcall fee_distributor.burn(fee_token.address)
     log FeesDistributed(total_amount=balance, distributor_share=remaining_balance)
 
